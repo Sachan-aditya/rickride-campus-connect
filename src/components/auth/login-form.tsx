@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { User, LogIn } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -17,6 +18,12 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const roleOptions = [
+  { value: "student", label: "Student", icon: <User className="mr-2 w-5 h-5" /> },
+  { value: "driver", label: "Driver", icon: <LogIn className="mr-2 w-5 h-5" /> },
+  { value: "admin", label: "Admin", icon: <User className="mr-2 w-5 h-5" /> },
+];
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,108 +57,127 @@ export default function LoginForm() {
       });
 
       navigate("/dashboard");
-    }, 1000);
+    }, 1100);
   }
 
   return (
-    <div className="w-full max-w-md">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 animate-fade-in"
-          autoComplete="off"
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
+        className="flex flex-col gap-7"
+      >
+        {/* Email */}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-blue-600 dark:text-[#bbe1fd]">Email</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="you@example.com"
+                  type="email"
+                  autoComplete="email"
+                  disabled={isLoading}
+                  className="rounded-xl h-12 px-4 text-base bg-white/95 dark:bg-black/20 border ring-1 ring-blue-100 dark:ring-blue-500 placeholder:text-slate-400"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Password */}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-blue-600 dark:text-[#bbe1fd]">Password</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="••••••••"
+                  type="password"
+                  autoComplete="current-password"
+                  disabled={isLoading}
+                  className="rounded-xl h-12 px-4 text-base bg-white/95 dark:bg-black/20 border ring-1 ring-blue-100 dark:ring-blue-500 placeholder:text-slate-400"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Role as Tab/Highlight */}
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-blue-600 dark:text-[#bbe1fd] mb-1">
+                Sign in as
+              </FormLabel>
+              <FormControl>
+                <div className="flex gap-2">
+                  {roleOptions.map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => form.setValue("role", opt.value as FormValues["role"])}
+                      className={`
+                        flex items-center gap-1 px-4 py-2 rounded-lg border font-medium text-base 
+                        transition-all
+                        ${form.watch("role") === opt.value
+                          ? "bg-blue-600 text-white shadow-md ring-2 ring-blue-300"
+                          : "bg-white dark:bg-black/10 text-blue-700 dark:text-blue-100 border-blue-100 dark:border-blue-500 hover:bg-blue-50/60 dark:hover:bg-blue-900/30"}
+                      `}
+                      aria-pressed={form.watch("role") === opt.value}
+                      disabled={isLoading}
+                    >
+                      {opt.icon} {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Login button */}
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full rounded-xl py-3 mt-2 text-lg font-bold
+            bg-gradient-to-r from-[#4F8EF7] to-[#1977cc] shadow-blue-200 hover:scale-105 hover:bg-blue-600 transition-all"
+          disabled={isLoading}
         >
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-blue text-base">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="you@example.com"
-                    type="email"
-                    autoComplete="email"
-                    disabled={isLoading}
-                    className="glass-effect rounded-lg h-12 px-4 text-lg focus:ring-2 focus:ring-blue-400 bg-white/80 dark:bg-black/30 ring-1 ring-blue-100 shadow-lg placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-blue text-base">Password</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="••••••••"
-                    type="password"
-                    autoComplete="current-password"
-                    disabled={isLoading}
-                    className="glass-effect rounded-lg h-12 px-4 text-lg focus:ring-2 focus:ring-blue-400 bg-white/80 dark:bg-black/30 ring-1 ring-blue-100 shadow-lg placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-blue text-base">Role</FormLabel>
-                <FormControl>
-                  <Select
-                    disabled={isLoading}
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className="glass-effect rounded-lg h-12 px-4 text-base bg-white/80 dark:bg-black/30 ring-1 ring-blue-100 shadow-lg focus:ring-2 focus:ring-blue-400">
-                      <SelectValue placeholder="Select Role" />
-                    </SelectTrigger>
-                    <SelectContent className="z-50 bg-white dark:bg-[#23243b] text-gray-900 dark:text-white rounded-xl shadow-lg">
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="driver">Driver</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex flex-col gap-4">
-            <Button
-              type="submit"
-              className="w-full rounded-xl py-3 bg-rickride-blue text-white text-lg shadow-blue-200 hover:scale-105 hover:bg-blue-600 transition-all"
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </Button>
-            <div className="flex items-center justify-center gap-1 text-base">
-              <span className="text-gray-500">Don't have an account?</span>
-              <Button
-                variant="link"
-                className="p-0 text-rickride-blue text-base"
-                onClick={() => navigate("/register")}
-                disabled={isLoading}
-              >
-                Register
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Form>
-    </div>
+          {isLoading
+            ? "Signing in..."
+            : (
+              <span className="flex items-center justify-center gap-2">
+                <LogIn className="w-5 h-5 -ml-1" />
+                Sign in
+              </span>
+            )
+          }
+        </Button>
+        {/* Register shortcut */}
+        <div className="flex items-center justify-center gap-1 text-base">
+          <span className="text-gray-500">Don't have an account?</span>
+          <Button
+            variant="link"
+            className="p-0 text-[#4F8EF7] text-base hover:underline"
+            onClick={() => navigate("/register")}
+            disabled={isLoading}
+          >
+            Register
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

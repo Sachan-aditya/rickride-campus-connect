@@ -7,51 +7,74 @@ import RickRideLogo from "@/components/ui/rickride-logo";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Redirect if already logged in
     const user = localStorage.getItem('user');
-    if (user) {
-      navigate('/dashboard');
-    }
+    if (user) navigate('/dashboard');
 
-    // Theme listener for logo coloring
-    const handler = () => {
+    // Theme listener for logo
+    const themeHandler = () =>
       setIsDark(document.documentElement.classList.contains("dark"));
-    };
-    handler();
-    window.addEventListener("click", handler);
-    window.addEventListener("keydown", handler);
+    themeHandler();
+    window.addEventListener("click", themeHandler);
+    window.addEventListener("keydown", themeHandler);
     return () => {
-      window.removeEventListener("click", handler);
-      window.removeEventListener("keydown", handler);
+      window.removeEventListener("click", themeHandler);
+      window.removeEventListener("keydown", themeHandler);
     };
   }, [navigate]);
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center px-6 transition-colors duration-300
+    <div className={`min-h-screen flex flex-col items-center justify-center py-6 px-4 
+      transition-colors duration-300
       ${isDark
-        ? "bg-gradient-to-br from-[#121212] via-[#1B263B] to-[#202c39]"
-        : "bg-gradient-to-br from-[#eaf2fa] to-[#f8fafc]"}`}>
-      <ThemeToggle />
+        ? "bg-gradient-to-b from-[#121212] via-[#181B37] to-[#1b263b]"
+        : "bg-gradient-to-br from-[#eaf2fa] via-[#e9f2fb] to-[#f8fafc]"}
+    `}>
+      <div className="absolute top-5 right-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md animate-fade-in">
-        <div className="flex flex-col items-center mb-8">
-          <RickRideLogo theme={isDark ? "dark" : "light"} size={60} className="mb-2" />
-          <h1 className={`text-4xl font-extrabold mb-2 tracking-wide
-            ${isDark ? "text-white" : "text-[#4F8EF7]"}`}>RickRide</h1>
-          <p className={`text-lg ${isDark ? "text-gray-400" : "text-gray-600"}`}>Your campus rickshaw & events companion</p>
+        {/* Brand */}
+        <div className="flex flex-col items-center mb-7">
+          <RickRideLogo
+            theme={isDark ? "dark" : "light"}
+            size={64}
+            className="mb-3 animate-fade-in"
+          />
+          <h1
+            className={`font-poppins text-4xl font-extrabold tracking-tight leading-tight mb-2 
+            ${isDark ? "text-white" : "text-[#2676E7]"} drop-shadow`}
+          >
+            RickRide
+          </h1>
+          <span className={`
+            text-[1.08rem] font-medium 
+            ${isDark ? "text-[#c9e5ffbe]" : "text-[#548ded]"}
+            text-center w-full
+          `}>
+            Your campus rickshaw & events companion
+          </span>
         </div>
-        <div className={`glass-card rounded-3xl p-8 backdrop-blur-lg shadow-2xl border-2
+        {/* Login Glass Card */}
+        <div className={`glass-card rounded-3xl py-10 px-7 shadow-2xl border-2
           ${isDark
-            ? "bg-[#18203399] border-[#2768a950] shadow-blue-900/50"
-            : "bg-white/70 border-[#e4eaff] shadow-blue-100"}`}>
-          <h2 className={`text-2xl font-semibold mb-6 text-center
-            ${isDark ? "text-white" : "text-[#181b37]"}`}>Log in to your account</h2>
+            ? "bg-[#182033cf] border-[#366cc9a0] shadow-blue-900/40"
+            : "bg-white/95 border-[#b1cffb] shadow-blue-100"}
+          transition-all duration-300
+        `}>
+          <h2 className={`font-bold text-2xl md:text-2xl text-center mb-7 tracking-tight ${isDark ? "text-white" : "text-[#202a51]"}`}>
+            Sign in to RickRide
+          </h2>
           <LoginForm />
         </div>
-        <p className={`text-center text-gray-500 text-sm mt-8 ${!isDark ? "text-gray-400" : ""}`}>
-          RickRide &copy; {new Date().getFullYear()} - Campus Mobility Solution
+        <p className={`text-center text-xs mt-8 opacity-90
+          ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          &copy; {new Date().getFullYear()} RickRide - Campus Mobility Solution
         </p>
       </div>
     </div>
