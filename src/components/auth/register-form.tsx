@@ -1,211 +1,192 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  fullName: z.string().min(2, { message: "Full name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  enrollmentNo: z.string().min(4, { message: "Enrollment number is required" }),
+  name: z.string().min(2, { message: "Enter your full name" }),
+  email: z.string().email("Enter a valid email"),
+  enrollmentNo: z.string().min(2, { message: "Enter enrollment no." }),
+  password: z.string().min(6, { message: "Password must be at least 6 chars" }),
   role: z.enum(["student", "driver", "admin"]),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-  confirmPassword: z.string().min(6, { message: "Confirm password is required" }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  profilePicture: z.any().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function RegisterForm() {
+export default function RegisterForm({ isDark }: { isDark?: boolean }) {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
+      name: "",
       enrollmentNo: "",
-      role: "student",
+      email: "",
       password: "",
-      confirmPassword: "",
+      role: "student",
     },
   });
 
-  function onSubmit(values: FormValues) {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  function handleSubmit(values: FormValues) {
     setIsLoading(true);
-    // Mock registration - In a real app this would connect to your auth service
+
+    // Mock image upload
+    let imageUrl = previewImage;
+    if (values.profilePicture?.[0]) {
+      imageUrl = URL.createObjectURL(values.profilePicture[0]);
+    }
+
+    // Mock role mapping for localUser
+    const localUser = {
+      id: Math.random().toString(36).slice(2),
+      name: values.name,
+      enrollmentNo: values.enrollmentNo,
+      email: values.email,
+      password: values.password, // never store plain passwords in prod!
+      role: values.role,
+      profilePicture: imageUrl,
+    };
+
     setTimeout(() => {
       setIsLoading(false);
-      // Mock successful registration
+      localStorage.setItem("user", JSON.stringify(localUser));
+
       toast({
         title: "Registration successful!",
-        description: "Your account has been created",
+        description: `Welcome to RickRide as a ${values.role.charAt(0).toUpperCase() + values.role.slice(1)}!`,
       });
-      
-      navigate("/login");
-    }, 1000);
+
+      // Redirect to dashboard after short delay
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 500);
+    }, 1100);
   }
 
+  // For glassy text-fields and role selection
+  const glassInput = `glass-effect text-${isDark ? "white" : "gray-700"} 
+    placeholder:text-${isDark ? "gray-400" : "gray-500"}`;
+
   return (
-    <div className="w-full max-w-md">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          <FormField
-            control={form.control}
-            name="fullName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-lightGray">Full Name</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="John Doe"
-                    disabled={isLoading}
-                    className="glass-effect text-white placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+    <form
+      className="space-y-7"
+      onSubmit={form.handleSubmit(handleSubmit)}
+      autoComplete="off"
+    >
+      {/* Avatar Upload Field */}
+      <div className="flex justify-center mb-2">
+        <div className="relative">
+          <Avatar className="h-20 w-20">
+            <AvatarImage src={previewImage || ""} alt="Profile" />
+            <AvatarFallback className="bg-blue-200/50 text-blue-600 text-xl">
+              {form.watch("name")?.charAt(0)?.toUpperCase() || "R"}
+            </AvatarFallback>
+          </Avatar>
+          <input
+            type="file"
+            accept="image/*"
+            disabled={isLoading}
+            className="absolute left-0 top-0 w-full h-full opacity-0 cursor-pointer rounded-full"
+            style={{ zIndex: 5 }}
+            onChange={(e) => {
+              handleImageChange(e);
+              form.setValue("profilePicture", e.target.files);
+            }}
+            aria-label="Upload profile photo"
           />
-          
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-lightGray">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="you@example.com"
-                    type="email"
-                    disabled={isLoading}
-                    className="glass-effect text-white placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="enrollmentNo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-lightGray">Enrollment Number</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="BT19CSE021"
-                    disabled={isLoading}
-                    className="glass-effect text-white placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-lightGray">Role</FormLabel>
-                <Select
-                  disabled={isLoading}
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="glass-effect text-white">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="driver">Rickshaw Driver</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-lightGray">Password</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="••••••••"
-                    type="password"
-                    disabled={isLoading}
-                    className="glass-effect text-white placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-rickride-lightGray">Confirm Password</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="••••••••"
-                    type="password"
-                    disabled={isLoading}
-                    className="glass-effect text-white placeholder:text-gray-400"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="flex flex-col gap-4 pt-2">
-            <Button
-              type="submit"
-              className="w-full bg-rickride-blue hover:bg-rickride-blue/90 text-white font-medium"
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating account..." : "Create account"}
-            </Button>
-            <div className="flex items-center justify-center gap-1 text-sm">
-              <span className="text-white/70">Already have an account?</span>
-              <Button
-                variant="link"
-                className="p-0 text-rickride-blue"
-                onClick={() => navigate("/login")}
-              >
-                Sign in
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Form>
-    </div>
+        </div>
+      </div>
+      {/* Full Name */}
+      <Input
+        placeholder="Full Name"
+        {...form.register("name")}
+        disabled={isLoading}
+        className={`${glassInput} w-full`}
+      />
+      {form.formState.errors.name && (
+        <span className="text-red-500 text-xs">{form.formState.errors.name.message}</span>
+      )}
+      {/* Enrollment No. */}
+      <Input
+        placeholder="Enrollment No."
+        {...form.register("enrollmentNo")}
+        disabled={isLoading}
+        className={`${glassInput} w-full`}
+      />
+      {form.formState.errors.enrollmentNo && (
+        <span className="text-red-500 text-xs">{form.formState.errors.enrollmentNo.message}</span>
+      )}
+      {/* Email */}
+      <Input
+        placeholder="Email Address"
+        type="email"
+        {...form.register("email")}
+        disabled={isLoading}
+        className={`${glassInput} w-full`}
+      />
+      {form.formState.errors.email && (
+        <span className="text-red-500 text-xs">{form.formState.errors.email.message}</span>
+      )}
+      {/* Password */}
+      <Input
+        placeholder="Password"
+        type="password"
+        {...form.register("password")}
+        disabled={isLoading}
+        className={`${glassInput} w-full`}
+      />
+      {form.formState.errors.password && (
+        <span className="text-red-500 text-xs">{form.formState.errors.password.message}</span>
+      )}
+      {/* Role Selection */}
+      <div>
+        <label className="block mb-1 text-sm font-medium text-rickride-blue">
+          Register as
+        </label>
+        <Select
+          defaultValue="student"
+          onValueChange={(val) => form.setValue("role", val as FormValues["role"])}
+          disabled={isLoading}
+        >
+          <SelectTrigger className={`${glassInput} w-full min-h-10`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent
+            className={`z-[100] ${isDark
+              ? "bg-[#232d3b]/90 text-white"
+              : "bg-white/90 text-gray-800 border border-blue-100"
+              }`}
+            style={{ boxShadow: "0 4px 24px 0 rgba(79, 142, 247, 0.18)" }}>
+            <SelectItem value="student">Student</SelectItem>
+            <SelectItem value="driver">Driver</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {/* Submit */}
+      <Button
+        type="submit"
+        className="w-full rounded-lg py-2 bg-rickride-blue text-white shadow-lg hover:scale-105 transition-transform"
+        disabled={isLoading}
+      >
+        {isLoading ? "Loading..." : "Sign Up"}
+      </Button>
+    </form>
   );
 }

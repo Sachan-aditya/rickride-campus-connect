@@ -4,26 +4,26 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
 export default function ThemeToggle() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    document.documentElement.classList.contains("dark") ||
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
 
   useEffect(() => {
-    // Always start with dark mode
-    document.documentElement.classList.add('dark');
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    // Set body class based on dark state
     if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove("dark");
     }
-  };
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(v => !v);
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={toggleTheme}
       className="rounded-full w-9 h-9 p-0 fixed top-4 right-4 z-50"
       aria-label="Toggle theme"
@@ -31,7 +31,7 @@ export default function ThemeToggle() {
       {isDarkMode ? (
         <Sun className="h-5 w-5 text-yellow-400" />
       ) : (
-        <Moon className="h-5 w-5 text-blue-400" />
+        <Moon className="h-5 w-5 text-blue-500" />
       )}
     </Button>
   );
