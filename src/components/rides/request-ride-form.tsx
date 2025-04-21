@@ -1,0 +1,169 @@
+
+import { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+
+const campusLocations = [
+  { value: "hostel-a", label: "Hostel A" },
+  { value: "hostel-b", label: "Hostel B" },
+  { value: "main-gate", label: "Main Gate" },
+  { value: "academic-block", label: "Academic Block" },
+  { value: "library", label: "Library" },
+  { value: "canteen", label: "Canteen" },
+  { value: "sports-complex", label: "Sports Complex" },
+  { value: "admin-block", label: "Admin Block" },
+];
+
+const formSchema = z.object({
+  from: z.string({
+    required_error: "Please select a starting point",
+  }),
+  to: z.string({
+    required_error: "Please select a destination",
+  }),
+}).refine(data => data.from !== data.to, {
+  message: "Destination must be different from starting point",
+  path: ["to"],
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+interface RequestRideFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit?: (values: FormValues) => void;
+}
+
+export default function RequestRideForm({ open, onOpenChange, onSubmit }: RequestRideFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      from: "",
+      to: "",
+    },
+  });
+
+  function handleSubmit(values: FormValues) {
+    setIsLoading(true);
+    
+    // Mock API call delay
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      toast({
+        title: "Ride requested!",
+        description: `From ${getLabelFromValue(values.from)} to ${getLabelFromValue(values.to)}`,
+      });
+      
+      onSubmit?.(values);
+      onOpenChange(false);
+      form.reset();
+    }, 1000);
+  }
+  
+  function getLabelFromValue(value: string): string {
+    return campusLocations.find(location => location.value === value)?.label || value;
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="glass-card sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-white">Request a Ride</DialogTitle>
+          <DialogDescription>
+            Select your pick-up location and destination to request a rickshaw ride.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+            <FormField
+              control={form.control}
+              name="from"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-rickride-lightGray">Pick-up Location</FormLabel>
+                  <Select
+                    disabled={isLoading}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="glass-effect text-white">
+                        <SelectValue placeholder="Select starting point" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {campusLocations.map((location) => (
+                        <SelectItem key={location.value} value={location.value}>
+                          {location.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="to"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-rickride-lightGray">Destination</FormLabel>
+                  <Select
+                    disabled={isLoading}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="glass-effect text-white">
+                        <SelectValue placeholder="Select destination" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {campusLocations.map((location) => (
+                        <SelectItem key={location.value} value={location.value}>
+                          {location.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DialogFooter className="pt-2">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-rickride-blue hover:bg-rickride-blue/90 text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? "Requesting..." : "Request Ride"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
