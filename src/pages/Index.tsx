@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ThemeToggle from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import RickRideLogo from "@/components/ui/rickride-logo";
-import { ArrowRight, MapPin, Clock, CreditCard, Languages, Star, City } from "lucide-react";
+import { ArrowRight, MapPin, Clock, CreditCard, Languages, Star, Building } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -222,7 +222,7 @@ export default function Index() {
                     : 'bg-white border border-black/5 hover:border-black/10 shadow-sm'}`}
               >
                 <div className="flex justify-center mb-2">
-                  <City className="h-5 w-5 text-blue-500" />
+                  <Building className="h-5 w-5 text-blue-500" />
                 </div>
                 <span className="font-medium">{city}</span>
               </div>
