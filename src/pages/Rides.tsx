@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Filter, MapPin, Plus } from "lucide-react";
@@ -112,29 +111,52 @@ export default function Rides() {
   };
   
   const handleJoinRide = (ride: Ride) => {
-    // In a real app, this would call an API
+    if (!user) return;
+    
+    // Check if user is already in any active ride
+    const isInActiveRide = rides.some(r => 
+      r.riders.includes(user.id) && 
+      ["pending", "ongoing", "accepted"].includes(r.status)
+    );
+    
+    if (isInActiveRide) {
+      toast({
+        title: "Cannot join ride",
+        description: "You are already in an active ride. Please complete or cancel your existing ride first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Update rides array
     const updatedRides = rides.map((r) => {
-      if (r.id === ride.id && user) {
+      if (r.id === ride.id) {
         const newRiders = [...r.riders, user.id];
         const updatedRide = {
           ...r,
           riders: newRiders,
         };
         
-        // If ride becomes full, automatically update status after a short delay
+        // If ride becomes full, automatically update status and add mock driver
         if (newRiders.length === r.maxCapacity) {
           setTimeout(() => {
             setRides(prev => 
               prev.map(item => 
                 item.id === ride.id 
-                  ? { ...item, status: 'ongoing' } 
+                  ? { 
+                      ...item, 
+                      status: 'accepted',
+                      driverName: "Rakesh Kumar",
+                      driverPhone: "98765-43210",
+                      vehicleNumber: "MP-07-TC-1234",
+                    } 
                   : item
               )
             );
             
             toast({
               title: "Ride is now full!",
-              description: "The rickshaw is on its way. You can now track your ride.",
+              description: "Driver details have been assigned. You can now track your ride.",
             });
           }, 1500);
         }
@@ -173,7 +195,24 @@ export default function Rides() {
   };
   
   const handleRequestRide = (values: any) => {
-    // Get the full location names
+    if (!user) return;
+    
+    // Check if user is already in any active ride
+    const isInActiveRide = rides.some(r => 
+      r.riders.includes(user.id) && 
+      ["pending", "ongoing", "accepted"].includes(r.status)
+    );
+    
+    if (isInActiveRide) {
+      toast({
+        title: "Cannot request ride",
+        description: "You are already in an active ride. Please complete or cancel your existing ride first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Get the full location names from values
     const getLocationName = (value: string) => {
       return value
         .split('-')
@@ -181,13 +220,12 @@ export default function Rides() {
         .join(' ');
     };
     
-    // Create a new ride
     const newRide: Ride = {
       id: `r${Date.now()}`,
       from: getLocationName(values.from),
       to: getLocationName(values.to),
       status: "pending",
-      riders: user ? [user.id] : [],
+      riders: [user.id],
       maxCapacity: 6,
       created: new Date(),
     };

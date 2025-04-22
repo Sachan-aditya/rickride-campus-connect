@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -41,6 +42,7 @@ interface RequestRideFormProps {
 export default function RequestRideForm({ open, onOpenChange, onSubmit }: RequestRideFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,13 +52,29 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
     },
   });
 
-  function handleSubmit(values: FormValues) {
+  async function handleSubmit(values: FormValues) {
     setIsLoading(true);
+    
+    // Check if user is already in a ride
+    const existingRides = JSON.parse(localStorage.getItem('rides') || '[]');
+    const userHasRide = existingRides.some((ride: any) => 
+      ride.riders.includes(user.id) && 
+      ["pending", "ongoing", "accepted"].includes(ride.status)
+    );
+    
+    if (userHasRide) {
+      setIsLoading(false);
+      toast({
+        title: "Cannot request ride",
+        description: "You are already in an active ride. Please complete or cancel your existing ride first.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Mock API call delay
     setTimeout(() => {
       setIsLoading(false);
-      
       toast({
         title: "Ride requested!",
         description: `From ${getLabelFromValue(values.from)} to ${getLabelFromValue(values.to)}`,
@@ -74,10 +92,10 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md dark:glass-card bg-white dark:bg-transparent">
+      <DialogContent className="sm:max-w-md bg-white dark:glass-card dark:bg-transparent">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold dark:text-white text-black">Request a Ride</DialogTitle>
-          <DialogDescription className="dark:text-gray-400 text-gray-600">
+          <DialogTitle className="text-xl font-bold text-black dark:text-white">Request a Ride</DialogTitle>
+          <DialogDescription className="text-gray-600 dark:text-gray-400">
             Select your pick-up location and destination to request a rickshaw ride.
           </DialogDescription>
         </DialogHeader>
@@ -89,14 +107,14 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
               name="from"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="dark:text-gray-300 text-gray-700">Pick-up Location</FormLabel>
+                  <FormLabel className="text-gray-700 dark:text-gray-300">Pick-up Location</FormLabel>
                   <Select
                     disabled={isLoading}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="dark:glass-effect dark:text-white text-black bg-gray-50 dark:bg-transparent">
+                      <SelectTrigger className="text-black dark:text-white bg-gray-50 dark:bg-transparent dark:glass-effect">
                         <SelectValue placeholder="Select starting point" />
                       </SelectTrigger>
                     </FormControl>
@@ -118,14 +136,14 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
               name="to"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="dark:text-gray-300 text-gray-700">Destination</FormLabel>
+                  <FormLabel className="text-gray-700 dark:text-gray-300">Destination</FormLabel>
                   <Select
                     disabled={isLoading}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="dark:glass-effect dark:text-white text-black bg-gray-50 dark:bg-transparent">
+                      <SelectTrigger className="text-black dark:text-white bg-gray-50 dark:bg-transparent dark:glass-effect">
                         <SelectValue placeholder="Select destination" />
                       </SelectTrigger>
                     </FormControl>
@@ -146,7 +164,7 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="dark:border-white/20 dark:text-white text-black border-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="text-black dark:text-white border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10"
                 disabled={isLoading}
               >
                 Cancel
