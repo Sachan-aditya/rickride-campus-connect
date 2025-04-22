@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -18,6 +17,7 @@ const formSchema = z.object({
   gender: z.enum(["male", "female", "other", ""]).optional(),
   bio: z.string().max(150).optional(),
   profilePicture: z.any().optional(),
+  role: z.enum(["rider", "driver"]).default("rider"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -207,6 +207,32 @@ export default function ProfileForm({ user, onSubmit }: ProfileFormProps) {
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-rickride-lightGray">Role</FormLabel>
+              <Select
+                disabled={isLoading}
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="glass-effect text-white">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="rider">Rider</SelectItem>
+                  <SelectItem value="driver">Driver</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

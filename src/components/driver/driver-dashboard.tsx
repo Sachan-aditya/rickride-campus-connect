@@ -16,7 +16,7 @@ export default function DriverDashboard() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-black dark:text-white">Requested Rides</h2>
+      <h2 className="text-xl font-semibold text-white">Requested Rides</h2>
       {requestedRides.length > 0 ? (
         <div className="grid gap-4">
           {requestedRides.map((ride) => (
@@ -25,7 +25,7 @@ export default function DriverDashboard() {
         </div>
       ) : (
         <Card>
-          <CardContent className="p-6 text-center text-gray-500">
+          <CardContent className="p-6 text-center text-gray-400">
             No ride requests at the moment
           </CardContent>
         </Card>
