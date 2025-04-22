@@ -17,7 +17,7 @@ const formSchema = z.object({
   gender: z.enum(["male", "female", "other", ""]).optional(),
   bio: z.string().max(150).optional(),
   profilePicture: z.any().optional(),
-  role: z.enum(["rider", "driver"]).default("rider"),
+  role: z.enum(["student", "driver", "admin"]).default("student"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -31,7 +31,7 @@ export default function ProfileForm({ user, onSubmit }: ProfileFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(user.profilePicture || null);
   const { toast } = useToast();
-
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,6 +39,7 @@ export default function ProfileForm({ user, onSubmit }: ProfileFormProps) {
       phone: user.phone || "",
       gender: (user.gender as any) || "",
       bio: "",
+      role: user.role,
     },
   });
 
@@ -229,8 +230,9 @@ export default function ProfileForm({ user, onSubmit }: ProfileFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="rider">Rider</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="driver">Driver</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
