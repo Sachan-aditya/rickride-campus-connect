@@ -14,8 +14,11 @@ export interface Ride {
   id: string;
   from: string;
   to: string;
-  status: 'pending' | 'ongoing' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'ongoing' | 'completed' | 'cancelled';
   driverId?: string;
+  driverName?: string;
+  driverPhone?: string;
+  vehicleNumber?: string;
   riders: string[];
   maxCapacity: number;
   created: Date;

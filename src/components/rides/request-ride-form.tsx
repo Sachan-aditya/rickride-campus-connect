@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -10,14 +9,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from "@/hooks/use-toast";
 
 const campusLocations = [
-  { value: "hostel-a", label: "Hostel A" },
-  { value: "hostel-b", label: "Hostel B" },
+  { value: "guna", label: "Guna" },
+  { value: "metro", label: "Metro" },
+  { value: "sada-chauharha", label: "Sada Chauharha" },
   { value: "main-gate", label: "Main Gate" },
-  { value: "academic-block", label: "Academic Block" },
-  { value: "library", label: "Library" },
-  { value: "canteen", label: "Canteen" },
-  { value: "sports-complex", label: "Sports Complex" },
-  { value: "admin-block", label: "Admin Block" },
+  { value: "awan", label: "Awan" },
+  { value: "ruthiyai-station", label: "Ruthiyai Station" },
+  { value: "guna-station", label: "Guna Station" },
 ];
 
 const formSchema = z.object({
@@ -76,10 +74,10 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-card sm:max-w-md">
+      <DialogContent className="sm:max-w-md dark:glass-card bg-white dark:bg-transparent">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Request a Ride</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl font-bold dark:text-white text-black">Request a Ride</DialogTitle>
+          <DialogDescription className="dark:text-gray-400 text-gray-600">
             Select your pick-up location and destination to request a rickshaw ride.
           </DialogDescription>
         </DialogHeader>
@@ -91,14 +89,14 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
               name="from"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-rickride-lightGray">Pick-up Location</FormLabel>
+                  <FormLabel className="dark:text-gray-300 text-gray-700">Pick-up Location</FormLabel>
                   <Select
                     disabled={isLoading}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="glass-effect text-white">
+                      <SelectTrigger className="dark:glass-effect dark:text-white text-black bg-gray-50 dark:bg-transparent">
                         <SelectValue placeholder="Select starting point" />
                       </SelectTrigger>
                     </FormControl>
@@ -120,14 +118,14 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
               name="to"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-rickride-lightGray">Destination</FormLabel>
+                  <FormLabel className="dark:text-gray-300 text-gray-700">Destination</FormLabel>
                   <Select
                     disabled={isLoading}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="glass-effect text-white">
+                      <SelectTrigger className="dark:glass-effect dark:text-white text-black bg-gray-50 dark:bg-transparent">
                         <SelectValue placeholder="Select destination" />
                       </SelectTrigger>
                     </FormControl>
@@ -148,7 +146,7 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+                className="dark:border-white/20 dark:text-white text-black border-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"
                 disabled={isLoading}
               >
                 Cancel
