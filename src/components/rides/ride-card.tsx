@@ -1,3 +1,4 @@
+
 import { Clock, MapPin, User, Users, Truck, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -13,12 +14,13 @@ interface RideCardProps {
 }
 
 export default function RideCard({ ride, onJoin, onCancel, onTrack }: RideCardProps) {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isUserInRide = ride.riders.includes(user.id);
   const availableSeats = ride.maxCapacity - ride.riders.length;
   const isOngoing = ride.status === 'ongoing' || ride.status === 'accepted';
   const isPending = ride.status === 'pending';
   const isFull = availableSeats === 0;
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isUserInRide = ride.riders.includes(user.id);
+  const canCancel = !isOngoing && isPending;
   
   // Mock rider data
   const mockRiders = [
@@ -29,13 +31,6 @@ export default function RideCard({ ride, onJoin, onCancel, onTrack }: RideCardPr
     { id: "r5", name: "Manish", photo: null },
     { id: "r6", name: "Rohan", photo: null },
   ].slice(0, ride.riders.length);
-  
-  const isUserInRide = ride.riders.includes(user.id);
-  const availableSeats = ride.maxCapacity - ride.riders.length;
-  const isOngoing = ride.status === 'ongoing' || ride.status === 'accepted';
-  const isPending = ride.status === 'pending';
-  const isFull = availableSeats === 0;
-  const canCancel = !isOngoing && isPending;
 
   return (
     <Card className="overflow-hidden animate-slide-in dark:glass-card bg-white dark:bg-transparent">
