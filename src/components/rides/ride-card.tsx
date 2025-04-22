@@ -1,4 +1,4 @@
-import { Clock, MapPin, User, Users, Truck } from "lucide-react";
+import { Clock, MapPin, User, Users, Truck, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Ride } from "@/types";
@@ -30,6 +30,13 @@ export default function RideCard({ ride, onJoin, onCancel, onTrack }: RideCardPr
     { id: "r6", name: "Rohan", photo: null },
   ].slice(0, ride.riders.length);
   
+  const isUserInRide = ride.riders.includes(user.id);
+  const availableSeats = ride.maxCapacity - ride.riders.length;
+  const isOngoing = ride.status === 'ongoing' || ride.status === 'accepted';
+  const isPending = ride.status === 'pending';
+  const isFull = availableSeats === 0;
+  const canCancel = !isOngoing && isPending;
+
   return (
     <Card className="overflow-hidden animate-slide-in dark:glass-card bg-white dark:bg-transparent">
       <CardContent className="p-4">
@@ -114,7 +121,7 @@ export default function RideCard({ ride, onJoin, onCancel, onTrack }: RideCardPr
       </CardContent>
       
       <CardFooter className="p-3 pt-0 flex justify-between gap-2">
-        {isPending && onJoin && !isUserInRide && (
+        {isPending && onJoin && !isUserInRide && !userHasActiveRide() && (
           <Button 
             className={cn(
               "w-full",
@@ -129,7 +136,7 @@ export default function RideCard({ ride, onJoin, onCancel, onTrack }: RideCardPr
           </Button>
         )}
         
-        {isPending && onCancel && isUserInRide && (
+        {isPending && onCancel && isUserInRide && canCancel && (
           <Button 
             variant="outline" 
             className="w-full border-gray-200 dark:border-white/20 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
@@ -149,5 +156,14 @@ export default function RideCard({ ride, onJoin, onCancel, onTrack }: RideCardPr
         )}
       </CardFooter>
     </Card>
+  );
+}
+
+function userHasActiveRide(): boolean {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const rides = JSON.parse(localStorage.getItem('rides') || '[]');
+  return rides.some((r: any) => 
+    r.riders.includes(user.id) && 
+    ["pending", "ongoing", "accepted"].includes(r.status)
   );
 }

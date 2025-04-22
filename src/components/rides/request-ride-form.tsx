@@ -16,7 +16,7 @@ const campusLocations = [
   { value: "main-gate", label: "Main Gate" },
   { value: "awan", label: "Awan" },
   { value: "ruthiyai-station", label: "Ruthiyai Station" },
-  { value: "guna-station", label: "Guna Station" },
+  { value: "guna-station", label: "Guna Station" }
 ];
 
 const formSchema = z.object({
@@ -66,7 +66,7 @@ export default function RequestRideForm({ open, onOpenChange, onSubmit }: Reques
       setIsLoading(false);
       toast({
         title: "Cannot request ride",
-        description: "You are already in an active ride. Please complete or cancel your existing ride first.",
+        description: "You can only have one active ride at a time. Please complete your current ride first.",
         variant: "destructive",
       });
       return;
