@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types";
+import { Shield } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -60,6 +61,8 @@ export default function ProfileForm({ user, onSubmit }: ProfileFormProps) {
         ...user,
         ...values,
         profilePicture: imageUrl,
+        // Ensure role doesn't change - keep the original role
+        role: user.role,
       };
       
       // Update local storage
@@ -213,32 +216,15 @@ export default function ProfileForm({ user, onSubmit }: ProfileFormProps) {
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-rickride-lightGray">Role</FormLabel>
-              <Select
-                disabled={isLoading}
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger className="glass-effect text-white">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="driver">Driver</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Role field - now displayed as read-only */}
+        <div className="space-y-2">
+          <FormLabel className="text-rickride-lightGray">Role</FormLabel>
+          <div className="glass-effect text-white p-3 rounded-md flex items-center gap-2">
+            <Shield className="h-4 w-4 text-rickride-blue" />
+            <span className="capitalize">{user.role}</span>
+          </div>
+          <p className="text-xs text-gray-400">Your role is set during registration and cannot be changed.</p>
+        </div>
         
         <div className="flex justify-end pt-2">
           <Button

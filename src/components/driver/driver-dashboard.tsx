@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import RideCard from "@/components/rides/ride-card";
 import { Ride } from "@/types";
+import { Navigation } from "lucide-react";
 
 export default function DriverDashboard() {
   const [requestedRides, setRequestedRides] = useState<Ride[]>([]);
@@ -24,9 +25,11 @@ export default function DriverDashboard() {
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="p-6 text-center text-gray-400">
-            No ride requests at the moment
+        <Card className="bg-[#18203380] backdrop-blur-md border border-[#4F8EF7]/10">
+          <CardContent className="p-6 text-center">
+            <Navigation className="h-12 w-12 text-[#4F8EF7]/40 mb-3 mx-auto" />
+            <p className="text-gray-300">No ride requests at the moment</p>
+            <p className="text-sm text-gray-400 mt-1">Check back later for new requests</p>
           </CardContent>
         </Card>
       )}
