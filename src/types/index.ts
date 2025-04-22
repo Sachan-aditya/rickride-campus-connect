@@ -36,6 +36,9 @@ export interface Event {
   date: Date;
   createdBy: string;
   visibility: 'public' | 'private';
+  location?: string;
+  attendees?: number;
+  registrationLink?: string;
 }
 
 export interface Notification {
