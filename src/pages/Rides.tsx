@@ -18,7 +18,7 @@ const mockRides: Ride[] = [
     from: "Hostel A",
     to: "Library",
     status: "ongoing",
-    riders: ["user1", "user2", "user3"],
+    riders: ["user1", "user2", "user3", "user4", "user5", "user6"],
     maxCapacity: 6,
     created: new Date(Date.now() - 10 * 60 * 1000),
     eta: 12,
@@ -47,7 +47,7 @@ const mockRides: Ride[] = [
     from: "Canteen",
     to: "Library",
     status: "pending",
-    riders: ["user7", "user8", "user9", "user10"],
+    riders: ["user7", "user8", "user9", "user10", "user11"],
     maxCapacity: 6,
     created: new Date(Date.now() - 5 * 60 * 1000),
   },
@@ -115,10 +115,31 @@ export default function Rides() {
     // In a real app, this would call an API
     const updatedRides = rides.map((r) => {
       if (r.id === ride.id && user) {
-        return {
+        const newRiders = [...r.riders, user.id];
+        const updatedRide = {
           ...r,
-          riders: [...r.riders, user.id],
+          riders: newRiders,
         };
+        
+        // If ride becomes full, automatically update status after a short delay
+        if (newRiders.length === r.maxCapacity) {
+          setTimeout(() => {
+            setRides(prev => 
+              prev.map(item => 
+                item.id === ride.id 
+                  ? { ...item, status: 'ongoing' } 
+                  : item
+              )
+            );
+            
+            toast({
+              title: "Ride is now full!",
+              description: "The rickshaw is on its way. You can now track your ride.",
+            });
+          }, 1500);
+        }
+        
+        return updatedRide;
       }
       return r;
     });
@@ -132,9 +153,22 @@ export default function Rides() {
   };
   
   const handleCancelRide = (ride: Ride) => {
+    // In a real app, this would call an API to remove the user from the ride
+    const updatedRides = rides.map((r) => {
+      if (r.id === ride.id && user) {
+        return {
+          ...r,
+          riders: r.riders.filter(id => id !== user.id)
+        };
+      }
+      return r;
+    });
+    
+    setRides(updatedRides);
+    
     toast({
       title: "Ride cancelled",
-      description: "The ride request has been cancelled",
+      description: "You've left the ride successfully",
     });
   };
   
@@ -159,9 +193,14 @@ export default function Rides() {
     };
     
     setRides([newRide, ...rides]);
+    
+    toast({
+      title: "Ride requested!",
+      description: "Your ride request has been created successfully",
+    });
   };
   
-  const handleViewLiveRide = (ride: Ride) => {
+  const handleTrackRide = (ride: Ride) => {
     navigate('/live-ride');
   };
   
@@ -224,7 +263,8 @@ export default function Rides() {
                   key={ride.id} 
                   ride={ride} 
                   onJoin={ride.status === "pending" ? handleJoinRide : undefined} 
-                  onCancel={ride.status === "pending" ? handleCancelRide : undefined} 
+                  onCancel={ride.status === "pending" ? handleCancelRide : undefined}
+                  onTrack={ride.status === "ongoing" || ride.riders.length === ride.maxCapacity ? handleTrackRide : undefined}
                 />
               ))}
               {filteredRides.length === 0 && (

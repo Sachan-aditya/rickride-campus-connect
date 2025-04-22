@@ -1,16 +1,19 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, Users, Link as LinkIcon, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/layout/navbar";
 import EventCard from "@/components/events/event-card";
 import CreateEventForm from "@/components/events/create-event-form";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Event, User } from "@/types";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock events data
+// Mock events data with registration links
 const mockEvents: Event[] = [
   {
     id: "e1",
@@ -20,6 +23,9 @@ const mockEvents: Event[] = [
     date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
     createdBy: "Tech Club",
     visibility: "public",
+    attendees: 85,
+    location: "Main Auditorium",
+    registrationLink: "https://docs.google.com/forms/d/e/1FAIpQLSf9_example_form_link/viewform"
   },
   {
     id: "e2",
@@ -29,6 +35,9 @@ const mockEvents: Event[] = [
     date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
     createdBy: "Cultural Committee",
     visibility: "public",
+    attendees: 120,
+    location: "Open Air Theatre",
+    registrationLink: "https://docs.google.com/forms/d/e/1FAIpQLScZ_example_form_link/viewform"
   },
   {
     id: "e3",
@@ -38,6 +47,9 @@ const mockEvents: Event[] = [
     date: new Date(), // Today
     createdBy: "Sports Committee",
     visibility: "public",
+    attendees: 200,
+    location: "Sports Complex",
+    registrationLink: "https://docs.google.com/forms/d/e/1FAIpQLSdT_example_form_link/viewform"
   },
   {
     id: "e4",
@@ -47,6 +59,9 @@ const mockEvents: Event[] = [
     date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Tomorrow
     createdBy: "Coding Club",
     visibility: "public",
+    attendees: 75,
+    location: "Computer Center",
+    registrationLink: "https://docs.google.com/forms/d/e/1FAIpQLSeY_example_form_link/viewform"
   },
 ];
 
@@ -56,6 +71,8 @@ export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const [user, setUser] = useState<User | null>(null);
+  const [registrationLink, setRegistrationLink] = useState<string>("");
+  const { toast } = useToast();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -78,6 +95,32 @@ export default function Events() {
   
   const handleViewEvent = (event: Event) => {
     setSelectedEvent(event);
+    if (event.registrationLink) {
+      setRegistrationLink(event.registrationLink);
+    }
+  };
+  
+  const handleRegister = () => {
+    if (selectedEvent?.registrationLink) {
+      // In a real app, we would first track this registration in our database
+      window.open(selectedEvent.registrationLink, '_blank');
+      
+      toast({
+        title: "Registration initiated",
+        description: "You're being redirected to the registration form",
+      });
+    }
+  };
+  
+  const copyRegistrationLink = () => {
+    if (selectedEvent?.registrationLink) {
+      navigator.clipboard.writeText(selectedEvent.registrationLink);
+      
+      toast({
+        title: "Link copied!",
+        description: "Registration link copied to clipboard",
+      });
+    }
   };
   
   const filterEvents = () => {
@@ -209,29 +252,88 @@ export default function Events() {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <h3 className="text-sm text-rickride-blue font-medium mb-1">Date & Time</h3>
-                <p className="text-white">{formatDate(selectedEvent.date)}</p>
+              <div className="flex gap-2 flex-wrap">
+                <Badge variant="outline" className="bg-white/5 text-rickride-blue border-rickride-blue/20">
+                  <Calendar className="h-3 w-3 mr-1" /> 
+                  {formatDate(selectedEvent.date)}
+                </Badge>
+                
+                {selectedEvent.location && (
+                  <Badge variant="outline" className="bg-white/5 text-white border-white/20">
+                    <MapPin className="h-3 w-3 mr-1" /> 
+                    {selectedEvent.location}
+                  </Badge>
+                )}
+                
+                {selectedEvent.attendees && (
+                  <Badge variant="outline" className="bg-white/5 text-white border-white/20">
+                    <Users className="h-3 w-3 mr-1" /> 
+                    {selectedEvent.attendees}+ attending
+                  </Badge>
+                )}
               </div>
               
               <div>
                 <h3 className="text-sm text-rickride-blue font-medium mb-1">Description</h3>
                 <p className="text-gray-300">{selectedEvent.description}</p>
               </div>
+              
+              {selectedEvent.registrationLink && (
+                <div>
+                  <h3 className="text-sm text-rickride-blue font-medium mb-1">Registration</h3>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex-1 relative">
+                      <Input 
+                        value={registrationLink}
+                        readOnly
+                        className="pr-10 bg-white/5 text-gray-300 text-sm border-white/20"
+                      />
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white"
+                        onClick={copyRegistrationLink}
+                      >
+                        <LinkIcon className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400">Register using the Google Form link above</p>
+                </div>
+              )}
             </div>
             
-            <div className="flex justify-end gap-3 mt-4">
+            <DialogFooter className="sm:justify-between flex-wrap gap-2">
               <Button
                 variant="outline"
+                size="sm"
+                className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
                 onClick={() => setSelectedEvent(null)}
-                className="border-white/20 text-white hover:bg-white/10 hover:text-white"
               >
                 Close
               </Button>
-              <Button className="bg-rickride-blue hover:bg-rickride-blue/90">
-                Join Event
-              </Button>
-            </div>
+              
+              <div className="flex gap-2">
+                {selectedEvent.registrationLink && (
+                  <Button 
+                    size="sm"
+                    variant="outline"
+                    className="border-white/20 text-white flex items-center gap-1"
+                    onClick={() => window.open(selectedEvent.registrationLink, '_blank')}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Open Form
+                  </Button>
+                )}
+                <Button 
+                  size="sm"
+                  className="bg-rickride-blue hover:bg-rickride-blue/90"
+                  onClick={handleRegister}
+                >
+                  Register Now
+                </Button>
+              </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
