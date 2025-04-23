@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, TrendingUp, Users, Navigation } from "lucide-react";
@@ -10,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/components/ui/theme-toggle";
 import { Ride, User } from "@/types";
 import DriverDashboard from "@/components/driver/driver-dashboard";
+import RideCard from "@/components/rides/ride-card";
 
 const popularDestinations = [
   { id: "d1", name: "Library", count: 24 },
@@ -40,6 +40,16 @@ export default function Dashboard() {
     }
   }, [navigate]);
   
+  // Only show ongoing ride on student dashboard
+  let ongoingRide: Ride | null = null;
+  if (user && user.role === "student") {
+    const allRides = JSON.parse(localStorage.getItem('rides') || '[]');
+    ongoingRide = allRides.find((ride: Ride) =>
+      ride.riders.includes(user.id) &&
+      (ride.status === "ongoing" || ride.status === "pending" || ride.status === "accepted")
+    ) || null;
+  }
+
   const handleRequestRide = (values: any) => {
     // Get the full location names
     const getLocationName = (value: string) => {
@@ -75,7 +85,6 @@ export default function Dashboard() {
   
   if (!user) return null;
   
-  // If user is a driver, show driver dashboard
   if (user.role === 'driver') {
     return (
       <div className="min-h-screen transition-colors duration-200">
@@ -99,75 +108,58 @@ export default function Dashboard() {
       </div>
     );
   }
-  
-  // For students and other users, show regular dashboard
+
+  if (user.role === 'admin') {
+    return (
+      <div className="min-h-screen transition-colors duration-200">
+        <Navbar />
+        <main className="container mx-auto px-2 md:px-4 pt-20 md:pt-24 max-w-2xl">
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold">
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground mt-1 text-lg">
+                View all rides, live rides, events and more
+              </p>
+            </div>
+            <ThemeToggle className="hidden md:block" />
+          </div>
+          {/* Add admin features here */}
+        </main>
+      </div>
+    );
+  }
+
+  // Student dashboard, only ongoing ride
   return (
     <div className="min-h-screen transition-colors duration-200">
       <Navbar />
-      
       <main className="container mx-auto px-4 pt-20 md:pt-24">
         <div className="mb-8 animate-fade-in flex flex-col md:flex-row md:items-end justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold">
-              Hey {user.name.split(' ')[0]}! <span className="text-[#4F8EF7]">Where to today?</span>
+              Dashboard
             </h1>
             <p className="text-muted-foreground mt-1 text-lg">
-              Request a rickshaw ride within campus
+              View your ongoing ride.
             </p>
           </div>
           <ThemeToggle className="hidden md:block" />
         </div>
-        
         <div className="space-y-6 animate-slide-in">
-          <Card className="glass-card">
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-xl font-semibold">Request a Ride</h2>
-                  <p className="text-muted-foreground text-sm">
-                    Need a rickshaw? Make a request now
-                  </p>
-                </div>
-                
-                <Button 
-                  className="bg-[#4F8EF7] hover:bg-[#4F8EF7]/90 w-full sm:w-auto rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                  onClick={() => setIsRequestModalOpen(true)}
-                >
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Request Ride
-                </Button>
-              </div>
-              
-              <div className="bg-background/50 rounded-xl p-5 border">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-[#4F8EF7]" />
-                  <h3 className="font-medium text-lg">Popular Destinations Today</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {popularDestinations.map((dest) => (
-                    <button
-                      key={dest.id}
-                      className="p-4 bg-muted border rounded-xl hover:bg-muted/80 transition-all duration-300 text-left group"
-                      onClick={() => {
-                        setIsRequestModalOpen(true);
-                      }}
-                    >
-                      <div className="font-medium group-hover:text-[#4F8EF7] transition-colors">{dest.name}</div>
-                      <div className="flex items-center text-sm text-muted-foreground mt-1">
-                        <Users className="h-3.5 w-3.5 mr-1.5 text-[#4F8EF7]" /> 
-                        <span>{dest.count} rides today</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {ongoingRide ? (
+            <RideCard ride={ongoingRide} />
+          ) : (
+            <div className="glass-card text-center p-8">
+              <h2 className="text-lg font-medium text-muted-foreground">
+                No ongoing ride found.
+              </h2>
+            </div>
+          )}
         </div>
       </main>
-      
-      <RequestRideForm 
+      <RequestRideForm
         open={isRequestModalOpen}
         onOpenChange={setIsRequestModalOpen}
         onSubmit={handleRequestRide}

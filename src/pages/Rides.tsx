@@ -78,263 +78,103 @@ export default function Rides() {
       navigate('/login');
       return;
     }
-    
     setUser(JSON.parse(userString));
-    
     // Load mock rides
     setRides(mockRides);
   }, [navigate]);
   
   useEffect(() => {
-    // Filter and sort rides when tab, rides, or sort method changes
-    filterAndSortRides();
-  }, [activeTab, rides, sortBy]);
-  
-  const filterAndSortRides = () => {
-    let filtered = [...rides];
-    
-    // Filter by tab
-    if (activeTab === "ongoing") {
-      filtered = filtered.filter(ride => ride.status === "ongoing");
-    } else if (activeTab === "available") {
-      filtered = filtered.filter(ride => ride.status === "pending");
-    }
-    
-    // Sort rides
-    if (sortBy === "latest") {
-      filtered.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
-    } else if (sortBy === "popular") {
-      filtered.sort((a, b) => b.riders.length - a.riders.length);
-    }
-    
-    setFilteredRides(filtered);
-  };
-  
-  const handleJoinRide = (ride: Ride) => {
     if (!user) return;
-    
-    // Check if user is already in any active ride
-    const isInActiveRide = rides.some(r => 
-      r.riders.includes(user.id) && 
-      ["pending", "ongoing", "accepted"].includes(r.status)
-    );
-    
-    if (isInActiveRide) {
-      toast({
-        title: "Cannot join ride",
-        description: "You are already in an active ride. Please complete or cancel your existing ride first.",
-        variant: "destructive",
-      });
-      return;
+    // Student: see only their history (rides previously completed)
+    if (user.role === "student") {
+      setFilteredRides(rides.filter(r => r.riders.includes(user.id) && r.status === "completed"));
+    } else if (user.role === "driver") {
+      // Driver: only completed rides by them
+      setFilteredRides(rides.filter(r => r.driverId === user.id && r.status === "completed"));
+    } else if (user.role === "admin") {
+      // Admin: all rides
+      setFilteredRides(rides);
     }
-    
-    // Update rides array
-    const updatedRides = rides.map((r) => {
-      if (r.id === ride.id) {
-        const newRiders = [...r.riders, user.id];
-        const updatedRide = {
-          ...r,
-          riders: newRiders,
-        };
-        
-        // If ride becomes full, automatically update status and add mock driver
-        if (newRiders.length === r.maxCapacity) {
-          setTimeout(() => {
-            setRides(prev => 
-              prev.map(item => 
-                item.id === ride.id 
-                  ? { 
-                      ...item, 
-                      status: 'accepted',
-                      driverName: "Rakesh Kumar",
-                      driverPhone: "98765-43210",
-                      vehicleNumber: "MP-07-TC-1234",
-                    } 
-                  : item
-              )
-            );
-            
-            toast({
-              title: "Ride is now full!",
-              description: "Driver details have been assigned. You can now track your ride.",
-            });
-          }, 1500);
-        }
-        
-        return updatedRide;
-      }
-      return r;
-    });
-    
-    setRides(updatedRides);
-    
-    toast({
-      title: "Ride joined!",
-      description: `You've joined the ride from ${ride.from} to ${ride.to}`,
-    });
-  };
-  
-  const handleCancelRide = (ride: Ride) => {
-    // In a real app, this would call an API to remove the user from the ride
-    const updatedRides = rides.map((r) => {
-      if (r.id === ride.id && user) {
-        return {
-          ...r,
-          riders: r.riders.filter(id => id !== user.id)
-        };
-      }
-      return r;
-    });
-    
-    setRides(updatedRides);
-    
-    toast({
-      title: "Ride cancelled",
-      description: "You've left the ride successfully",
-    });
-  };
-  
-  const handleRequestRide = (values: any) => {
-    if (!user) return;
-    
-    // Check if user is already in any active ride
-    const isInActiveRide = rides.some(r => 
-      r.riders.includes(user.id) && 
-      ["pending", "ongoing", "accepted"].includes(r.status)
-    );
-    
-    if (isInActiveRide) {
-      toast({
-        title: "Cannot request ride",
-        description: "You are already in an active ride. Please complete or cancel your existing ride first.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Get the full location names from values
-    const getLocationName = (value: string) => {
-      return value
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    };
-    
-    const newRide: Ride = {
-      id: `r${Date.now()}`,
-      from: getLocationName(values.from),
-      to: getLocationName(values.to),
-      status: "pending",
-      riders: [user.id],
-      maxCapacity: 6,
-      created: new Date(),
-    };
-    
-    setRides([newRide, ...rides]);
-    
-    toast({
-      title: "Ride requested!",
-      description: "Your ride request has been created successfully",
-    });
-  };
-  
-  const handleTrackRide = (ride: Ride) => {
-    navigate('/live-ride');
-  };
-  
+  }, [activeTab, rides, sortBy, user]);
+
   if (!user) return null;
-  
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#121212] to-[#1E1E1E] pb-20 md:pb-6">
+    <div className="min-h-screen bg-gradient-to-b from-[#F6F8FA] to-[#E5EDFB] dark:from-[#232d3b] dark:to-[#1B2533] pb-20 md:pb-6 transition-colors duration-200">
       <Navbar />
-      
       <main className="container mx-auto px-4 pt-20 md:pt-24">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
-              Campus Rides
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              All Rides
             </h1>
-            <p className="text-gray-400 mt-1">
-              Find and join rickshaw rides around campus
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              {user.role === "student" ? 'See your past completed rides' : 'All rides in system'}
             </p>
           </div>
-          
-          <div className="flex items-center gap-3 mt-4 sm:mt-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-white/20">
-                  <Filter className="h-4 w-4 mr-2" />
-                  {sortBy === "latest" ? "Latest" : "Popular"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setSortBy("latest")}>
-                  Latest
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("popular")}>
-                  Popular
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <Button 
-              className="bg-rickride-blue hover:bg-rickride-blue/90"
-              onClick={() => setIsRequestModalOpen(true)}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Request Ride
-            </Button>
-          </div>
         </div>
-        
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="animate-slide-in">
-          <TabsList className="mb-6 bg-rickride-darkGray/50">
-            <TabsTrigger value="all">All Rides</TabsTrigger>
-            <TabsTrigger value="ongoing">Ongoing</TabsTrigger>
-            <TabsTrigger value="available">Available</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value={activeTab} className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRides.map((ride) => (
-                <RideCard 
-                  key={ride.id} 
-                  ride={ride} 
-                  onJoin={ride.status === "pending" ? handleJoinRide : undefined} 
-                  onCancel={ride.status === "pending" ? handleCancelRide : undefined}
-                  onTrack={ride.status === "ongoing" || ride.riders.length === ride.maxCapacity ? handleTrackRide : undefined}
-                />
-              ))}
-              {filteredRides.length === 0 && (
-                <div className="md:col-span-2 lg:col-span-3 text-center py-12">
-                  <MapPin className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-medium text-white mb-2">No rides found</h3>
-                  <p className="text-gray-400">
-                    {activeTab === "ongoing" 
-                      ? "There are no ongoing rides at the moment." 
-                      : activeTab === "available"
-                        ? "There are no available rides to join." 
-                        : "There are no rides to display."}
-                  </p>
-                  
-                  <Button 
-                    className="bg-rickride-blue hover:bg-rickride-blue/90 mt-4"
-                    onClick={() => setIsRequestModalOpen(true)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Request Ride
-                  </Button>
-                </div>
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {filteredRides.length > 0 ? (
+            filteredRides.map((ride) => (
+              <RideCard key={ride.id} ride={ride} />
+            ))
+          ) : (
+            <div className="md:col-span-2 lg:col-span-3 text-center py-12">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">No rides found</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                No rides to display.
+              </p>
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
+        {/* Request Ride button only for students */}
+        {user.role === "student" && (
+          <Button
+            className="bg-[#4F8EF7] hover:bg-[#3f7ada] mt-8"
+            onClick={() => setIsRequestModalOpen(true)}
+          >
+            Request Ride
+          </Button>
+        )}
       </main>
-      
-      <RequestRideForm 
+      <RequestRideForm
         open={isRequestModalOpen}
         onOpenChange={setIsRequestModalOpen}
-        onSubmit={handleRequestRide}
+        onSubmit={(values: any) => {
+          // Only students can request
+          if (user?.role !== "student") {
+            toast({
+              title: "Action not allowed",
+              description: "Only students can request new rides.",
+              variant: "destructive",
+            });
+            return;
+          }
+          // Get the full location names from values
+          const getLocationName = (value: string) => {
+            return value
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+          };
+          
+          const newRide: Ride = {
+            id: `r${Date.now()}`,
+            from: getLocationName(values.from),
+            to: getLocationName(values.to),
+            status: "pending",
+            riders: [user.id],
+            maxCapacity: 6,
+            created: new Date(),
+          };
+          
+          setRides([newRide, ...rides]);
+          
+          toast({
+            title: "Ride requested!",
+            description: "Your ride request has been created successfully",
+          });
+        }}
       />
     </div>
   );

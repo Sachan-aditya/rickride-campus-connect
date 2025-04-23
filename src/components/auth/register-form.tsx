@@ -13,7 +13,11 @@ import { Camera, FileText } from "lucide-react";
 const formSchema = z.object({
   name: z.string().min(2, { message: "Enter your full name" }),
   email: z.string().email("Enter a valid email"),
-  enrollmentNo: z.string().min(2, { message: "Enter enrollment no." }).optional(),
+  // restrict correct format if student
+  enrollmentNo: z
+    .string()
+    .regex(/^\d{3}[a-zA-Z]\d{3}$/, { message: "Enrollment number must match format 221b029" })
+    .optional(),
   password: z.string().min(6, { message: "Password must be at least 6 chars" }),
   role: z.enum(["student", "driver", "admin"]),
   profilePicture: z.any().optional(),

@@ -9,7 +9,6 @@ interface ThemeToggleProps {
 
 export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
   const [isDarkMode, setIsDarkMode] = useState(() =>
-    document.documentElement.classList.contains("dark") ||
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
 
@@ -26,20 +25,18 @@ export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => setIsDarkMode(v => !v);
-
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggleTheme}
+      onClick={() => setIsDarkMode((v) => !v)}
       className={`rounded-full w-9 h-9 p-0 z-50 ${className}`}
       aria-label="Toggle theme"
     >
       {isDarkMode ? (
-        <Sun className="h-5 w-5 text-yellow-400" />
+        <Sun className="h-5 w-5 text-yellow-500" />
       ) : (
-        <Moon className="h-5 w-5 text-blue-500" />
+        <Moon className="h-5 w-5 text-blue-700" />
       )}
     </Button>
   );
