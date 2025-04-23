@@ -17,8 +17,12 @@ export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
     // Set body class based on dark state
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
+      document.body.classList.add("dark-theme");
+      document.body.classList.remove("light-theme");
     } else {
       document.documentElement.classList.remove("dark");
+      document.body.classList.add("light-theme");
+      document.body.classList.remove("dark-theme");
     }
   }, [isDarkMode]);
 

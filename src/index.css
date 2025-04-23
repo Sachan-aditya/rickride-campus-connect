@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -74,15 +75,41 @@
   }
 
   body {
-    @apply bg-[#F6F8FA] text-[#232629] font-sans;
+    @apply bg-background text-foreground font-sans transition-colors duration-200;
+  }
+
+  /* Light theme styles */
+  body.light-theme {
+    @apply bg-[#F6F8FA] text-[#232629];
+  }
+
+  /* Dark theme styles */
+  body.dark-theme {
+    @apply bg-[#121212] text-[#E8E8E8];
   }
 
   .glass-card {
-    @apply bg-white/70 backdrop-blur-md border border-black/10 shadow-lg;
+    @apply backdrop-blur-md border shadow-lg;
+  }
+  
+  body.light-theme .glass-card {
+    @apply bg-white/70 border-black/10;
+  }
+  
+  body.dark-theme .glass-card {
+    @apply bg-[#1E1E1E]/70 border-white/10;
   }
   
   .glass-effect {
-    @apply backdrop-blur-lg bg-blue-50/40 border border-blue-100/10;
+    @apply backdrop-blur-lg border;
+  }
+  
+  body.light-theme .glass-effect {
+    @apply bg-blue-50/40 border-blue-100/10;
+  }
+  
+  body.dark-theme .glass-effect {
+    @apply bg-blue-900/20 border-blue-800/10;
   }
 }
 
