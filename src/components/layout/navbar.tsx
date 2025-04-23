@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Bell, Calendar, Home, MapPin, User } from 'lucide-react';
@@ -7,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 import { User as UserType } from '@/types';
-import RickRideGradientLogo from "@/components/ui/rickride-gradient-logo";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -79,17 +79,25 @@ export default function Navbar() {
     <>
       {/* Header always at the top */}
       <div className="fixed top-0 left-0 right-0 z-50 shadow bg-card border-b flex items-center justify-between h-16 md:px-8 px-4">
-        {/* RickRide Title with gradient */}
+        {/* RickRide Title at the top */}
         <div className="flex items-center gap-6">
-          <RickRideGradientLogo size={30} />
+          <span className="text-2xl font-extrabold text-[#4F8EF7] tracking-widest">RickRide</span>
         </div>
         <div className="flex items-center justify-end gap-3 flex-1">
-          {/* Push profile avatar to the extreme right using ml-auto */}
-          <NavLink to="/profile" className="flex items-center gap-2 group text-muted-foreground hover:text-[#4F8EF7] ml-auto">
+          {/* Profile button at the extreme left */}
+          <NavLink to="/profile" className="flex items-center gap-2 group text-muted-foreground hover:text-[#4F8EF7] mr-auto">
             <User className="h-6 w-6" />
             <span className="hidden md:inline-block font-semibold">Profile</span>
           </NavLink>
           <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full text-muted-foreground hover:text-foreground"
+            aria-label="Notifications"
+          >
+            <Bell className="h-5 w-5" />
+          </Button>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button
