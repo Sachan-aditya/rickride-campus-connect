@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import RideCard from "@/components/rides/ride-card";
 import { Ride } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Navigation, check } from "lucide-react";
+import { Navigation, Check } from "lucide-react";
 
 export default function DriverDashboard() {
   const [requestedRides, setRequestedRides] = useState<Ride[]>([]);
@@ -70,7 +70,7 @@ export default function DriverDashboard() {
                       ? "Accepting..."
                       : (
                           <>
-                            <check className="w-4 h-4 mr-2" />
+                            <Check className="w-4 h-4 mr-2" />
                             Accept Ride
                           </>
                         )}

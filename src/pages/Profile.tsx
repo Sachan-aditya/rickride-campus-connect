@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Calendar } from "lucide-react";
@@ -112,7 +111,7 @@ export default function Profile() {
           <TabsContent value="profile" className="mt-0">
             <Card className="glass-card">
               <CardContent className="p-6">
-                <ProfileForm user={user} onSubmit={handleUpdateProfile} />
+                <ProfileForm user={user} onSave={handleUpdateProfile} />
               </CardContent>
             </Card>
           </TabsContent>
