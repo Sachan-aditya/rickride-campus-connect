@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, TrendingUp, Users, Navigation } from "lucide-react";
@@ -78,23 +77,21 @@ export default function Dashboard() {
   // If user is a driver, show driver dashboard
   if (user.role === 'driver') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#121212] via-[#181B37] to-[#1E1E1E] pb-20 md:pb-6">
+      <div className="min-h-screen bg-[#F6F8FA] pb-20 md:pb-6">
         <Navbar />
-        
-        <main className="container mx-auto px-4 pt-20 md:pt-24">
-          <div className="mb-8 animate-fade-in flex flex-col md:flex-row md:items-end justify-between">
+        <main className="container mx-auto px-2 md:px-4 pt-20 md:pt-24 max-w-2xl">
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white">
+              <h1 className="text-3xl md:text-4xl font-bold text-black">
                 Driver Dashboard
               </h1>
-              <p className="text-gray-300 mt-1 text-lg">
-                Manage ride requests and your schedule
+              <p className="text-gray-700 mt-1 text-lg">
+                Manage ride requests
               </p>
             </div>
             <ThemeToggle className="hidden md:block" />
           </div>
-          
-          <div className="space-y-6 animate-slide-in">
+          <div className="space-y-6">
             <DriverDashboard />
           </div>
         </main>
