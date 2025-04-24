@@ -5,18 +5,18 @@ import { useTheme } from "next-themes";
 interface RickRideLogoProps {
   className?: string;
   size?: number;
+  theme?: "light" | "dark"; // Add theme prop to the interface
 }
 
 export default function RickRideLogo({
   className = "",
   size = 44,
+  theme, // Add theme to the component props
 }: RickRideLogoProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
   
-  // Colors based on the theme
-  const bodyColor = isDark ? "#fff" : "#000"; // Rick: White in dark mode, Black in light mode
-  const accentColor = "#4F8EF7"; // Ride: Always blue
+  // If a theme is explicitly provided, use it; otherwise, use the resolvedTheme
+  const isDark = theme ? theme === "dark" : resolvedTheme === "dark";
   
   return (
     <span className={className} style={{ display: "inline-block" }}>
