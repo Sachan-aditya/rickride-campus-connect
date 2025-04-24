@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import RegisterForm from "@/components/auth/register-form";
 import ThemeToggle from "@/components/ui/theme-toggle";
@@ -9,6 +9,11 @@ export default function Register() {
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(true);
 
+  // Use useCallback to prevent the function from being recreated on each render
+  const handler = useCallback(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
   useEffect(() => {
     // Check if user is already logged in
     const user = localStorage.getItem('user');
@@ -17,9 +22,6 @@ export default function Register() {
     }
 
     // Theme listener for logo coloring
-    const handler = () => {
-      setIsDark(document.documentElement.classList.contains("dark"));
-    };
     handler();
     window.addEventListener("click", handler);
     window.addEventListener("keydown", handler);
@@ -27,7 +29,7 @@ export default function Register() {
       window.removeEventListener("click", handler);
       window.removeEventListener("keydown", handler);
     };
-  }, [navigate]);
+  }, [navigate, handler]);
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center px-6 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,11 @@ export default function Index() {
     document.documentElement.classList.contains("dark")
   );
   
+  // Use useCallback to prevent the function from being recreated on each render
+  const handleThemeChange = useCallback(() => {
+    setIsDarkMode(document.documentElement.classList.contains("dark"));
+  }, []);
+  
   useEffect(() => {
     // Check if user is already logged in
     const user = localStorage.getItem('user');
@@ -21,10 +26,7 @@ export default function Index() {
     }
     
     // Theme listener for dynamic UI updates
-    const handleThemeChange = () => {
-      setIsDarkMode(document.documentElement.classList.contains("dark"));
-    };
-    
+    handleThemeChange();
     window.addEventListener('click', handleThemeChange);
     window.addEventListener('keydown', handleThemeChange);
     
@@ -32,7 +34,7 @@ export default function Index() {
       window.removeEventListener('click', handleThemeChange);
       window.removeEventListener('keydown', handleThemeChange);
     };
-  }, [navigate]);
+  }, [navigate, handleThemeChange]);
   
   return (
     <div className={`min-h-screen overflow-x-hidden transition-colors duration-300 

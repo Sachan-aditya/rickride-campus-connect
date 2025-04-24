@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "@/components/auth/login-form";
 import ThemeToggle from "@/components/ui/theme-toggle";
@@ -11,14 +11,17 @@ export default function Login() {
     document.documentElement.classList.contains("dark")
   );
 
+  // Use useCallback to prevent the function from being recreated on each render
+  const themeHandler = useCallback(() =>
+    setIsDark(document.documentElement.classList.contains("dark")),
+  []);
+
   useEffect(() => {
     // Redirect if already logged in
     const user = localStorage.getItem('user');
     if (user) navigate('/dashboard');
 
     // Theme listener for logo
-    const themeHandler = () =>
-      setIsDark(document.documentElement.classList.contains("dark"));
     themeHandler();
     window.addEventListener("click", themeHandler);
     window.addEventListener("keydown", themeHandler);
@@ -26,7 +29,7 @@ export default function Login() {
       window.removeEventListener("click", themeHandler);
       window.removeEventListener("keydown", themeHandler);
     };
-  }, [navigate]);
+  }, [navigate, themeHandler]);
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center py-6 px-4 
