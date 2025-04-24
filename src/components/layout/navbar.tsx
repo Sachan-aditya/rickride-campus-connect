@@ -1,33 +1,28 @@
 
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Calendar, Home, LogOut, MapPin, User } from 'lucide-react';
+import { Calendar, Home, LogOut, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
-import { User as UserType } from '@/types';
-import RickRideLogo from '@/components/ui/rickride-logo';
+import { useAuth } from '@/context/auth-context';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   
-  const userString = localStorage.getItem('user');
-  const user: UserType | null = userString ? JSON.parse(userString) : null;
+  if (!user) return null;
+
+  const userRole = profile?.role || 'student';
   
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    });
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
-  
-  if (!user) return null;
   
   const baseNavItems = [
     { 
@@ -50,7 +45,7 @@ export default function Navbar() {
     }
   ];
   
-  const navItems = user.role === 'driver' ? baseNavItems : [...baseNavItems, ...studentItems];
+  const navItems = userRole === 'driver' ? baseNavItems : [...baseNavItems, ...studentItems];
   
   return (
     <>
@@ -126,6 +121,13 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+      
+      {/* Footer with attribution */}
+      <div className="fixed bottom-4 left-0 right-0 text-center z-40 md:bottom-8 pointer-events-none">
+        <p className="text-xs text-muted-foreground/70">
+          Made with love by ADITYA SACHAN ❤️
+        </p>
+      </div>
     </>
   );
 }

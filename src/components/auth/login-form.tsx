@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/auth-context";
 import { User, LogIn } from "lucide-react";
+import { LoadingSpinner } from "../ui/loading-spinner";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -28,7 +29,7 @@ const roleOptions = [
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { signIn } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -39,25 +40,17 @@ export default function LoginForm() {
     },
   });
 
-  function onSubmit(values: FormValues) {
+  async function onSubmit(values: FormValues) {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const { success } = await signIn(values.email, values.password);
+      
+      if (success) {
+        navigate("/dashboard");
+      }
+    } finally {
       setIsLoading(false);
-      localStorage.setItem("user", JSON.stringify({
-        id: "user123",
-        name: "Aditya Kumar",
-        email: values.email,
-        enrollmentNo: "BT19CSE021",
-        role: values.role,
-      }));
-
-      toast({
-        title: "Welcome back!",
-        description: `Logged in as ${values.role.charAt(0).toUpperCase() + values.role.slice(1)}`,
-      });
-
-      navigate("/dashboard");
-    }, 1100);
+    }
   }
 
   return (
@@ -155,16 +148,18 @@ export default function LoginForm() {
             bg-gradient-to-r from-[#4F8EF7] to-[#1977cc] shadow-blue-200 hover:scale-105 hover:bg-blue-600 transition-all"
           disabled={isLoading}
         >
-          {isLoading
-            ? "Signing in..."
-            : (
-              <span className="flex items-center justify-center gap-2">
-                <LogIn className="w-5 h-5 -ml-1" />
-                Sign in
-              </span>
-            )
-          }
+          {isLoading ? (
+            <div className="flex items-center">
+              <LoadingSpinner size={20} className="mr-2" /> Signing in...
+            </div>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <LogIn className="w-5 h-5 -ml-1" />
+              Sign in
+            </span>
+          )}
         </Button>
+        
         {/* Register shortcut */}
         <div className="flex items-center justify-center gap-1 text-base">
           <span className="text-gray-500">Don't have an account?</span>

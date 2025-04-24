@@ -1,48 +1,45 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, TrendingUp, Users, Navigation } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/layout/navbar";
 import RequestRideForm from "@/components/rides/request-ride-form";
 import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/components/ui/theme-toggle";
-import { Ride, User } from "@/types";
+import { Ride } from "@/types";
 import DriverDashboard from "@/components/driver/driver-dashboard";
 import RideCard from "@/components/rides/ride-card";
-
-const popularDestinations = [
-  { id: "d1", name: "Library", count: 24 },
-  { id: "d2", name: "Canteen", count: 18 },
-  { id: "d3", name: "Sports Complex", count: 12 },
-];
+import { useAuth } from "@/context/auth-context";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [rides, setRides] = useState<Ride[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   
   useEffect(() => {
-    // Check if user is logged in
-    const userString = localStorage.getItem('user');
-    if (!userString) {
-      navigate('/login');
-      return;
-    }
+    // Simulate loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      
+      // Initialize rides in localStorage if not present
+      if (!localStorage.getItem('rides')) {
+        localStorage.setItem('rides', JSON.stringify([]));
+      }
+    }, 1000);
     
-    setUser(JSON.parse(userString));
-    
-    // Initialize rides in localStorage if not present
-    if (!localStorage.getItem('rides')) {
-      localStorage.setItem('rides', JSON.stringify([]));
-    }
-  }, [navigate]);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Only show ongoing ride on student dashboard
   let ongoingRide: Ride | null = null;
-  if (user && user.role === "student") {
+  if (user && profile?.role === "student") {
     const allRides = JSON.parse(localStorage.getItem('rides') || '[]');
     ongoingRide = allRides.find((ride: Ride) =>
       ride.riders.includes(user.id) &&
@@ -83,14 +80,27 @@ export default function Dashboard() {
     });
   };
   
-  if (!user) return null;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size={40} text="Loading dashboard..." />
+      </div>
+    );
+  }
+
+  if (!user || !profile) return null;
   
-  if (user.role === 'driver') {
+  if (profile.role === 'driver') {
     return (
       <div className="min-h-screen transition-colors duration-200">
         <Navbar />
         <main className="container mx-auto px-2 md:px-4 pt-20 md:pt-24 max-w-2xl">
-          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 flex flex-col md:flex-row md:items-end justify-between"
+          >
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">
                 Driver Dashboard
@@ -100,21 +110,31 @@ export default function Dashboard() {
               </p>
             </div>
             <ThemeToggle className="hidden md:block" />
-          </div>
-          <div className="space-y-6">
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="space-y-6"
+          >
             <DriverDashboard />
-          </div>
+          </motion.div>
         </main>
       </div>
     );
   }
 
-  if (user.role === 'admin') {
+  if (profile.role === 'admin') {
     return (
       <div className="min-h-screen transition-colors duration-200">
         <Navbar />
         <main className="container mx-auto px-2 md:px-4 pt-20 md:pt-24 max-w-2xl">
-          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 flex flex-col md:flex-row md:items-end justify-between"
+          >
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">
                 Admin Dashboard
@@ -124,30 +144,40 @@ export default function Dashboard() {
               </p>
             </div>
             <ThemeToggle className="hidden md:block" />
-          </div>
-          {/* Add admin features here */}
+          </motion.div>
         </main>
       </div>
     );
   }
 
-  // Student dashboard, only ongoing ride
+  // Student dashboard
   return (
     <div className="min-h-screen transition-colors duration-200">
       <Navbar />
       <main className="container mx-auto px-4 pt-20 md:pt-24">
-        <div className="mb-8 animate-fade-in flex flex-col md:flex-row md:items-end justify-between">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8 flex flex-col md:flex-row md:items-end justify-between"
+        >
           <div>
             <h1 className="text-3xl md:text-4xl font-bold">
               Dashboard
             </h1>
             <p className="text-muted-foreground mt-1 text-lg">
-              View your ongoing ride.
+              Welcome, {profile?.name || user.email}
             </p>
           </div>
           <ThemeToggle className="hidden md:block" />
-        </div>
-        <div className="space-y-6 animate-slide-in">
+        </motion.div>
+        
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="space-y-6 animate-slide-in"
+        >
           {ongoingRide ? (
             <RideCard ride={ongoingRide} />
           ) : (
@@ -155,9 +185,20 @@ export default function Dashboard() {
               <h2 className="text-lg font-medium text-muted-foreground">
                 No ongoing ride found.
               </h2>
+              <p className="text-sm text-muted-foreground/70 mt-1">
+                Create a new ride request to get started.
+              </p>
+              
+              <Button 
+                onClick={() => setIsRequestModalOpen(true)}
+                className="mt-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              >
+                <Navigation className="mr-2 h-4 w-4" />
+                Request a Ride
+              </Button>
             </div>
           )}
-        </div>
+        </motion.div>
       </main>
       <RequestRideForm
         open={isRequestModalOpen}
