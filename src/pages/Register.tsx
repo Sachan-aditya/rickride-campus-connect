@@ -7,7 +7,9 @@ import RickRideLogo from "@/components/ui/rickride-logo";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() => 
+    document.documentElement.classList.contains("dark")
+  );
 
   // Use useCallback to prevent the function from being recreated on each render
   const handler = useCallback(() => {
@@ -37,7 +39,9 @@ export default function Register() {
         ? "from-[#121212] to-[#1E1E1E]"
         : "from-[#eaf2fa] to-[#f8fafc]"}
       transition-colors duration-300`}>
-      <ThemeToggle />
+      <div className="absolute top-5 right-6">
+        <ThemeToggle />
+      </div>
       
       <div className="w-full max-w-md animate-fade-in">
         <div className="flex flex-col items-center mb-8">
