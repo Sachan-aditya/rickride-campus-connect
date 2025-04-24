@@ -19,7 +19,14 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AppLoader from "@/components/ui/app-loader";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -51,7 +58,7 @@ const AppContent = () => {
     // Simulate initial loading
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2500);
+    }, 2000); // Reduced loading time
     
     return () => clearTimeout(timer);
   }, []);
@@ -63,8 +70,6 @@ const AppContent = () => {
       </AnimatePresence>
       
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <Routes>
           <Route path="/" element={<PublicRoute><Index /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -76,6 +81,8 @@ const AppContent = () => {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Toaster />
+        <Sonner />
       </TooltipProvider>
     </>
   );

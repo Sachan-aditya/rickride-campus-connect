@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
+import RickRideLogo from '../ui/rickride-logo';
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -84,8 +85,7 @@ export default function Navbar() {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-xl font-bold mr-12">
-              <span className="dark:text-white text-black">Rick</span>
-              <span className="text-[#4F8EF7]">Ride</span>
+              <RickRideLogo />
             </span>
             
             <div className="flex items-center gap-1">

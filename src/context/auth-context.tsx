@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, getCurrentUser } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +22,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Use a stable reference to fetch profile data to avoid infinite loops
+  const fetchProfileData = useCallback(async (userId: string) => {
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      } else {
+        setProfile(profileData);
+      }
+    } catch (profileFetchError) {
+      console.error('Error in profile fetch:', profileFetchError);
+    }
+  }, []);
+
   useEffect(() => {
     // Get initial session and set up auth subscription
     const setupAuth = async () => {
@@ -36,23 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (currentUser) {
           setUser(currentUser);
-          
           // Fetch user profile data
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .single();
-              
-            if (profileError) {
-              console.error('Error fetching profile:', profileError);
-            } else {
-              setProfile(profileData);
-            }
-          } catch (profileFetchError) {
-            console.error('Error in profile fetch:', profileFetchError);
-          }
+          await fetchProfileData(currentUser.id);
         }
       } catch (error) {
         console.error('Error setting up auth:', error);
@@ -70,21 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         async (event, session) => {
           if (session?.user) {
             setUser(session.user);
-            
             // Fetch user profile when auth state changes
-            try {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-                
-              if (profileData) {
-                setProfile(profileData);
-              }
-            } catch (profileError) {
-              console.error('Error fetching profile on auth change:', profileError);
-            }
+            await fetchProfileData(session.user.id);
           } else {
             setUser(null);
             setProfile(null);
@@ -107,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     };
-  }, []);
+  }, [fetchProfileData]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -135,6 +127,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       return { success: false, error: new Error("Unknown error") };
+    } catch (err) {
+      toast({
+        title: "Login error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { success: false, error: err };
     } finally {
       setLoading(false);
     }
@@ -162,16 +161,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (data.user) {
         // Create a profile record
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: data.user.id,
-          name: userData.name,
-          role: userData.role,
-          email: email,
-          enrollment_no: userData.enrollmentNo,
-        });
+        try {
+          const { error: profileError } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            name: userData.name,
+            role: userData.role,
+            email: email,
+            enrollment_no: userData.enrollmentNo,
+          });
 
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
+          if (profileError) {
+            console.error("Error creating profile:", profileError);
+          }
+        } catch (err) {
+          console.error("Profile creation error:", err);
         }
 
         toast({
@@ -182,17 +185,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       return { success: false, error: new Error("Unknown error") };
+    } catch (err) {
+      toast({
+        title: "Registration error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { success: false, error: err };
     } finally {
       setLoading(false);
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    });
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Logout error",
+        description: "An error occurred while logging out",
+        variant: "destructive",
+      });
+    }
   };
 
   const value = {

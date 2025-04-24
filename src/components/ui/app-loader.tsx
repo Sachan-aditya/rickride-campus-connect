@@ -2,16 +2,35 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { LoadingSpinner } from "./loading-spinner";
+import RickRideLogo from "./rickride-logo";
 
 export default function AppLoader() {
   const [progress, setProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState("Loading your campus companion...");
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setProgress(100);
     }, 2000);
     
-    return () => clearTimeout(timer);
+    // Animate the loading text
+    const texts = [
+      "Loading your campus companion...",
+      "Getting your rides ready...",
+      "Connecting to RickRide...",
+      "Almost there..."
+    ];
+    
+    let index = 0;
+    const textTimer = setInterval(() => {
+      index = (index + 1) % texts.length;
+      setLoadingText(texts[index]);
+    }, 800);
+    
+    return () => {
+      clearTimeout(timer);
+      clearInterval(textTimer);
+    };
   }, []);
 
   return (
@@ -29,10 +48,19 @@ export default function AppLoader() {
         className="flex flex-col items-center"
       >
         <div className="flex items-center mb-4">
-          <span className="text-3xl font-bold">
-            <span className="dark:text-white text-black">Rick</span>
-            <span className="text-[#4F8EF7]">Ride</span>
-          </span>
+          <motion.div
+            animate={{ 
+              scale: [1, 1.05, 1],
+              rotate: [0, 2, -2, 0] 
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut" 
+            }}
+          >
+            <RickRideLogo size={60} />
+          </motion.div>
         </div>
         
         <div className="w-64 h-1 bg-muted rounded-full overflow-hidden mb-3">
@@ -51,8 +79,9 @@ export default function AppLoader() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
           className="mt-4 text-sm text-muted-foreground"
+          key={loadingText} // Force animation refresh when text changes
         >
-          Loading your campus companion...
+          {loadingText}
         </motion.p>
       </motion.div>
     </motion.div>
