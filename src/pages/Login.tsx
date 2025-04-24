@@ -12,19 +12,26 @@ export default function Login() {
   );
 
   // Use useCallback to prevent the function from being recreated on each render
-  const themeHandler = useCallback(() =>
-    setIsDark(document.documentElement.classList.contains("dark")),
-  []);
+  const themeHandler = useCallback(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
 
   useEffect(() => {
-    // Redirect if already logged in
+    // Check if user is already logged in
     const user = localStorage.getItem('user');
-    if (user) navigate('/dashboard');
+    if (user) {
+      navigate('/dashboard');
+      return;
+    }
 
     // Theme listener for logo
     themeHandler();
+    
+    // Add event listeners
     window.addEventListener("click", themeHandler);
     window.addEventListener("keydown", themeHandler);
+    
+    // Clean up event listeners
     return () => {
       window.removeEventListener("click", themeHandler);
       window.removeEventListener("keydown", themeHandler);

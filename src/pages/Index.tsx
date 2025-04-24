@@ -23,13 +23,17 @@ export default function Index() {
     const user = localStorage.getItem('user');
     if (user) {
       navigate('/dashboard');
+      return;
     }
     
     // Theme listener for dynamic UI updates
     handleThemeChange();
+    
+    // Add event listeners
     window.addEventListener('click', handleThemeChange);
     window.addEventListener('keydown', handleThemeChange);
     
+    // Clean up event listeners
     return () => {
       window.removeEventListener('click', handleThemeChange);
       window.removeEventListener('keydown', handleThemeChange);

@@ -12,7 +12,7 @@ export default function Register() {
   );
 
   // Use useCallback to prevent the function from being recreated on each render
-  const handler = useCallback(() => {
+  const handleThemeChange = useCallback(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
@@ -21,17 +21,22 @@ export default function Register() {
     const user = localStorage.getItem('user');
     if (user) {
       navigate('/dashboard');
+      return;
     }
 
     // Theme listener for logo coloring
-    handler();
-    window.addEventListener("click", handler);
-    window.addEventListener("keydown", handler);
+    handleThemeChange();
+    
+    // Add event listeners
+    window.addEventListener("click", handleThemeChange);
+    window.addEventListener("keydown", handleThemeChange);
+    
+    // Clean up event listeners
     return () => {
-      window.removeEventListener("click", handler);
-      window.removeEventListener("keydown", handler);
+      window.removeEventListener("click", handleThemeChange);
+      window.removeEventListener("keydown", handleThemeChange);
     };
-  }, [navigate, handler]);
+  }, [navigate, handleThemeChange]);
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center px-6 
